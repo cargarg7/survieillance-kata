@@ -1,20 +1,19 @@
-import { sensor } from './types';
+import { Sensor, DetectingMotion, DetectingBy } from './types';
 import { getTime } from '../helper/time';
+import { DEFAULT_SENSOR_STATUS, STATUS } from './enums';
 
-const DEFAULT_SENSOR_STATUS = false;
+function generateDetectingMotion({ status, error }: Sensor): DetectingMotion {
+	const baseDetectingMotion = { status, time: getTime() };
+	return !error ? baseDetectingMotion : { ...baseDetectingMotion, status: STATUS.FALSE, error };
+}
 
-export function isDetectingMotion(sensor: sensor): boolean {
-	if (sensor?.error) return DEFAULT_SENSOR_STATUS;
+export function isDetectingMotion(sensor: Sensor): boolean {
+	if (sensor?.error) return STATUS.FALSE;
 
 	return sensor?.status || DEFAULT_SENSOR_STATUS;
 }
 
-function generateDetectingMotion({ status, error }: { status: boolean; error?: string }) {
-	const baseDetectingMotion = { status, time: getTime() };
-	return !error ? baseDetectingMotion : { ...baseDetectingMotion, status: false, error };
-}
-
-export function isDetectingBy(sensor: sensor) {
+export function isDetectingBy(sensor: Sensor): DetectingBy {
 	let { status = DEFAULT_SENSOR_STATUS } = sensor;
 	const detectingMotions: { status: boolean; time: number; error?: string }[] = [];
 
@@ -22,10 +21,10 @@ export function isDetectingBy(sensor: sensor) {
 		sensor: function () {
 			return { ...sensor, status };
 		},
-		updateStatus: function (sensor: sensor) {
+		updateStatus: function (sensor) {
 			const { status: newStatus, error } = sensor;
 			if (error) {
-				detectingMotions.push(generateDetectingMotion({ status: false, error }));
+				detectingMotions.push(generateDetectingMotion({ status: STATUS.FALSE, error }));
 				status = newStatus;
 				return;
 			}
@@ -38,11 +37,7 @@ export function isDetectingBy(sensor: sensor) {
 
 			return;
 		},
-		detectingMotionsByRageEveryTime: function (
-			minDateInTime: number,
-			maxDateInTime: number,
-			stepInSeconds = 1000
-		): boolean[] {
+		detectingMotionsByRageEveryTime: function (minDateInTime, maxDateInTime, stepInSeconds = 1000) {
 			const result = [];
 			const detectingMotionsReversed = [...detectingMotions].reverse();
 			let nextMinDateInTime = minDateInTime;

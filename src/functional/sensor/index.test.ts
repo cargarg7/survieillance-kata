@@ -1,45 +1,50 @@
-import { wait, getTime } from '../helper/time';
+import { wait } from '../helper/wait';
+import { getTime } from '../helper/time';
 import { isDetectingBy, isDetectingMotion } from './index';
-import { sensor } from './types';
+import { DetectingBy, Sensor } from './types';
 
 describe('Sensor', () => {
 	describe('isDetectingMotion', () => {
 		it('Should return FALSE if sensor has ERROR', () => {
-			const sensor: sensor = { status: false, error: 'Connection Error' };
+			const sensor: Sensor = { status: false, error: 'Connection Error' };
 			expect(isDetectingMotion(sensor)).toBe(false);
 		});
 
 		it('Should return FALSE if sensor has no status property', () => {
 			const sensor = {};
-			expect(isDetectingMotion(sensor as sensor)).toBe(false);
+			expect(isDetectingMotion(sensor as Sensor)).toBe(false);
 		});
 
 		it('Should return FALSE if sensor has FALSE status', () => {
-			const sensor: sensor = { status: false };
+			const sensor: Sensor = { status: false };
 			expect(isDetectingMotion(sensor)).toBe(false);
 		});
 
 		it('Should return TRUE if sensor has TRUE status', () => {
-			const sensor: sensor = { status: true };
+			const sensor: Sensor = { status: true };
 			expect(isDetectingMotion(sensor)).toBe(true);
 		});
 	});
 
 	describe('isDetectingBy', () => {
-		it('Should check status every second', async () => {
-			// Registry status updates...
-			const stepInSeconds = 100;
-			const sensor = { status: false };
-			const isDetectingBySensor = isDetectingBy(sensor);
-			const startTime = getTime(); // start
+		let isDetectingBySensor: DetectingBy;
+		let startTime: number;
+		let endTime: number;
+		beforeEach(async () => {
+			const sensor: Sensor = { status: false };
+			isDetectingBySensor = isDetectingBy(sensor);
+			startTime = getTime(); // start
 			await wait(0.01); // step 1
 			isDetectingBySensor.updateStatus({ status: true });
 			await wait(0.1); // step 2
 			isDetectingBySensor.updateStatus({ status: false, error: 'Connection Error' });
 			await wait(0.2); // step 3 and step 4
 			isDetectingBySensor.updateStatus({ status: true });
-			const endTime = await wait(0.2); // end --> step 5 and 6
+			endTime = await wait(0.2); // end --> step 5 and 6
+		});
 
+		it('Should check status every second', async () => {
+			const stepInSeconds = 100;
 			// detectinMotions status
 			const steps = Math.ceil((endTime - startTime) / stepInSeconds);
 			const results = isDetectingBySensor.detectingMotionsByRageEveryTime(startTime, endTime, stepInSeconds);
@@ -53,17 +58,6 @@ describe('Sensor', () => {
 		it('Should return false default record status if time searched before recording time', async () => {
 			// Registry status updates...
 			const stepInSeconds = 100;
-			const sensor = { status: false };
-			const isDetectingBySensor = isDetectingBy(sensor);
-			const startTime = getTime(); // start
-			await wait(0.01); // step 1
-			isDetectingBySensor.updateStatus({ status: true });
-			await wait(0.1); // step 2
-			isDetectingBySensor.updateStatus({ status: false });
-			await wait(0.1); // step 3
-			isDetectingBySensor.updateStatus({ status: true });
-			const endTime = await wait(0.2); // end --> step 4 and 5
-
 			// detectinMotions status
 			const endTimeBefore = endTime - 1000;
 			const startTimeBefore = startTime - 1000;
@@ -74,23 +68,12 @@ describe('Sensor', () => {
 				stepInSeconds
 			);
 			expect(results.length).toBe(steps);
-			expect(results).toEqual([false, false, false, false, false]);
+			expect(results).toEqual([false, false, false, false, false, false]);
 		});
 
 		it('Should return last status recorded if time searched after recording time', async () => {
 			// Registry status updates...
 			const stepInSeconds = 100;
-			const sensor = { status: false };
-			const isDetectingBySensor = isDetectingBy(sensor);
-			const startTime = getTime(); // start
-			await wait(0.01); // step 1
-			isDetectingBySensor.updateStatus({ status: true });
-			await wait(0.1); // step 2
-			isDetectingBySensor.updateStatus({ status: false });
-			await wait(0.1); // step 3
-			isDetectingBySensor.updateStatus({ status: true });
-			const endTime = await wait(0.2); // end --> step 4 and 5
-
 			// detectinMotions status
 			const endTimeBefore = endTime + 1000;
 			const startTimeBefore = startTime + 1000;
@@ -101,7 +84,7 @@ describe('Sensor', () => {
 				stepInSeconds
 			);
 			expect(results.length).toBe(steps);
-			expect(results).toEqual([true, true, true, true, true]);
+			expect(results).toEqual([true, true, true, true, true, true]);
 		});
 	});
 });

@@ -1,5 +1,5 @@
-import { sensor } from '../sensor/types';
+import { Sensor } from '../sensor/types';
 
-export type recorder = { recording: boolean };
+export type Recorder = { recording: boolean };
 
-export type statusCallbackType = (sensor: sensor) => boolean;
+export type StatusCallbackType = (sensor: Sensor) => boolean;
