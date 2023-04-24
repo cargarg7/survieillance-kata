@@ -10,17 +10,8 @@ export function isDetectingMotion(sensor: sensor): boolean {
 }
 
 function generateDetectingMotion({ status, error }: { status: boolean; error?: string }) {
-	if (!error)
-		return {
-			status,
-			time: getTime(),
-		};
-
-	return {
-		error,
-		status: false,
-		time: getTime(),
-	};
+	const baseDetectingMotion = { status, time: getTime() };
+	return !error ? baseDetectingMotion : { ...baseDetectingMotion, status: false, error };
 }
 
 export function isDetectingBy(sensor: sensor) {
@@ -47,7 +38,11 @@ export function isDetectingBy(sensor: sensor) {
 
 			return;
 		},
-		detectingMotionsByRage: function (minDateInTime: number, maxDateInTime: number, stepInSeconds = 1000): boolean[] {
+		detectingMotionsByRageEveryTime: function (
+			minDateInTime: number,
+			maxDateInTime: number,
+			stepInSeconds = 1000
+		): boolean[] {
 			const result = [];
 			const detectingMotionsReversed = [...detectingMotions].reverse();
 			let nextMinDateInTime = minDateInTime;

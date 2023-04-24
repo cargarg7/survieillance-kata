@@ -42,7 +42,7 @@ describe('Sensor', () => {
 
 			// detectinMotions status
 			const steps = Math.ceil((endTime - startTime) / stepInSeconds);
-			const results = isDetectingBySensor.detectingMotionsByRage(startTime, endTime, stepInSeconds);
+			const results = isDetectingBySensor.detectingMotionsByRageEveryTime(startTime, endTime, stepInSeconds);
 			expect(results.length).toBe(steps);
 			expect(results).toEqual([false, true, false, false, true, true]);
 			// last sensor status
@@ -68,7 +68,11 @@ describe('Sensor', () => {
 			const endTimeBefore = endTime - 1000;
 			const startTimeBefore = startTime - 1000;
 			const steps = Math.ceil((endTimeBefore - startTimeBefore) / stepInSeconds);
-			const results = isDetectingBySensor.detectingMotionsByRage(startTimeBefore, endTimeBefore, stepInSeconds);
+			const results = isDetectingBySensor.detectingMotionsByRageEveryTime(
+				startTimeBefore,
+				endTimeBefore,
+				stepInSeconds
+			);
 			expect(results.length).toBe(steps);
 			expect(results).toEqual([false, false, false, false, false]);
 		});
@@ -91,7 +95,11 @@ describe('Sensor', () => {
 			const endTimeBefore = endTime + 1000;
 			const startTimeBefore = startTime + 1000;
 			const steps = Math.ceil((endTimeBefore - startTimeBefore) / stepInSeconds);
-			const results = isDetectingBySensor.detectingMotionsByRage(startTimeBefore, endTimeBefore, stepInSeconds);
+			const results = isDetectingBySensor.detectingMotionsByRageEveryTime(
+				startTimeBefore,
+				endTimeBefore,
+				stepInSeconds
+			);
 			expect(results.length).toBe(steps);
 			expect(results).toEqual([true, true, true, true, true]);
 		});
