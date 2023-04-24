@@ -3,6 +3,21 @@ import { getTime } from '../helper/time';
 import { isDetectingBy, isDetectingMotion } from './index';
 import { DetectingBy, Sensor } from './types';
 
+function expectDetectionMotions<T>(list: T[]) {
+	return listMatchers(list);
+}
+
+function listMatchers<T>(list: T[]) {
+	return {
+		isExactly(...items: T[]) {
+			expect(items.length).toBe(list.length);
+			items.forEach((_: T, i: number) => {
+				expect(items[i]).toBe(list[i]);
+			});
+		},
+	};
+}
+
 describe('Sensor', () => {
 	describe('isDetectingMotion', () => {
 		it('Should return FALSE if sensor has ERROR', () => {
@@ -46,10 +61,8 @@ describe('Sensor', () => {
 		it('Should check status every second', async () => {
 			const stepInSeconds = 100;
 			// detectinMotions status
-			const steps = Math.ceil((endTime - startTime) / stepInSeconds);
 			const results = isDetectingBySensor.detectingMotionsByRageEveryTime(startTime, endTime, stepInSeconds);
-			expect(results.length).toBe(steps);
-			expect(results).toEqual([false, true, false, false, true, true]);
+			expectDetectionMotions(results).isExactly(false, true, false, false, true, true);
 			// last sensor status
 			const newSensor = isDetectingBySensor.sensor();
 			expect(newSensor).toEqual({ status: true });
@@ -61,14 +74,12 @@ describe('Sensor', () => {
 			// detectinMotions status
 			const endTimeBefore = endTime - 1000;
 			const startTimeBefore = startTime - 1000;
-			const steps = Math.ceil((endTimeBefore - startTimeBefore) / stepInSeconds);
 			const results = isDetectingBySensor.detectingMotionsByRageEveryTime(
 				startTimeBefore,
 				endTimeBefore,
 				stepInSeconds
 			);
-			expect(results.length).toBe(steps);
-			expect(results).toEqual([false, false, false, false, false, false]);
+			expectDetectionMotions(results).isExactly(false, false, false, false, false, false);
 		});
 
 		it('Should return last status recorded if time searched after recording time', async () => {
@@ -77,14 +88,12 @@ describe('Sensor', () => {
 			// detectinMotions status
 			const endTimeBefore = endTime + 1000;
 			const startTimeBefore = startTime + 1000;
-			const steps = Math.ceil((endTimeBefore - startTimeBefore) / stepInSeconds);
 			const results = isDetectingBySensor.detectingMotionsByRageEveryTime(
 				startTimeBefore,
 				endTimeBefore,
 				stepInSeconds
 			);
-			expect(results.length).toBe(steps);
-			expect(results).toEqual([true, true, true, true, true, true]);
+			expectDetectionMotions(results).isExactly(true, true, true, true, true, true);
 		});
 	});
 });
